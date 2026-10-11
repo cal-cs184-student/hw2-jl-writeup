@@ -28,19 +28,18 @@
 	<body>
 		<div class="container">
 		<h1>CS184/284A Fall 2026 Homework 2 Write-Up</h1>
-		<div style="text-align: center;">Names: </div>
+		<div style="text-align: center;">Names: Jameson Liu</div>
 
 		<br>
 
-		Link to webpage: (TODO) <a href="https://cs184.eecs.berkeley.edu/fa26">cs184.eecs.berkeley.edu/fa26</a>
+		Link to webpage: <a href="https://cal-cs184-student.github.io/hw2-jl-writeup/">cal-cs184-student.github.io/hw2-jl-writeup/</a>
 
 		<br>
-		
-		Link to GitHub repository: (TODO) <a href="https://cs184.eecs.berkeley.edu/fa26">cs184.eecs.berkeley.edu/fa26</a>
+
+		Link to GitHub repository: <a href="https://github.com/cal-cs184-student/hw2-jl">github.com/cal-cs184-student/hw2-jl</a>
 
 		<figure>
 			<img src="assets/teapot.png" alt="Teapot" style="width:50%"/>
-			<figcaption>You can add images with captions!</figcaption>
 		</figure>
 
 		<!--
@@ -48,69 +47,218 @@
 		-->
 
 		<h2>Overview</h2>
-		Give a high-level overview of what you implemented in this homework. Think about what you've built as a whole. Share your thoughts on what interesting things you've learned from completing the homework.
+		In this project, I implemented Bezier curve and patch evaluation, area-weighted vertex normals, edge flips and splits, and Loop subdivision.
+		The first two parts build smooth geometry by repeatedly interpolating control points.
+		The mesh parts work directly with triangle connectivity.
+		The most useful lesson was that a local mesh edit is only correct when every affected half-edge, vertex, edge, and face still points to the right neighbor; a visually plausible result alone does not guarantee that later edits will work.
 
 		<h2>Section I: Bezier Curves and Surfaces</h2>
 
 		<h3>Part 1: Bezier curves with 1D de Casteljau subdivision</h3>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		At a parameter <em>t</em>, de Casteljau's algorithm takes every adjacent pair of points and computes (1 − <em>t</em>)<em>p</em><sub>i</sub> + <em>t</em><em>p</em><sub>i+1</sub>, resulting in a new, shorter list of points.
+		Repeating this on the new list eventually results in one point.
 
-		<p>Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a column in that row. You might find this useful for framing and showing your result images in an organized fashion.</p>
-		<div style="display: flex; flex-direction: column; align-items: center;">
-			<table style="width: 100%; text-align: center; border-collapse: collapse;">
-			  <tr>
-				<td style="text-align: center;">
-				  <img src="assets/teapot.png" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
-				</td>
-				<td style="text-align: center;">
-				  <img src="assets/teapot.png" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
-				</td>
-			  </tr>
-			  <tr>
-				<td style="text-align: center;">
-				  <img src="assets/teapot.png" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
-				</td>
-				<td style="text-align: center;">
-				  <img src="assets/teapot.png" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
-				</td>
-			  </tr>
-			</table>
-		</div>
+    <br><br>
+
+		I implemented each step of this process by looping through every adjacent pair of points and putting its interpolated point in a new list.
+		For a fixed value of <em>t</em>, this one-level operation is called repeatedly until the list contains one point.
+    This process is repeated for many values of <em>t</em> from 0 to 1 and the resulting points are connected to form the full curve.
+		
+    <br><br>
+    
+    Below is a curve I made with six control points.
+
+    <figure>
+			<img src="assets/part_1_1.png" alt="6 points" style="width:50%"/>
+			<figcaption>6 points</figcaption>
+		</figure>
+
+		<figure>
+			<img src="assets/part_1_2.png" alt="First step of de Casteljau's algorithm" style="width:50%"/>
+			<figcaption>First step of de Casteljau's algorithm</figcaption>
+		</figure>
+
+		<figure>
+			<img src="assets/part_1_3.png" alt="Second step of de Casteljau's algorithm" style="width:50%"/>
+			<figcaption>Second step of de Casteljau's algorithm</figcaption>
+		</figure>
+
+		<figure>
+			<img src="assets/part_1_4.png" alt="Third step of de Casteljau's algorithm" style="width:50%"/>
+			<figcaption>Third step of de Casteljau's algorithm</figcaption>
+		</figure>
+
+		<figure>
+			<img src="assets/part_1_5.png" alt="Fourth step of de Casteljau's algorithm" style="width:50%"/>
+			<figcaption>Fourth step of de Casteljau's algorithm</figcaption>
+		</figure>
+
+		<figure>
+			<img src="assets/part_1_6.png" alt="Final step of de Casteljau's algorithm" style="width:50%"/>
+			<figcaption>Final step of de Casteljau's algorithm</figcaption>
+		</figure>
+
+		Below is a demonstration of how moving the control points changes the curve, and how varying <em>t</em> affects the evaluation of points.
+
+		<figure>
+			<img src="assets/part_1_7.png" alt="First value of t" style="width:50%"/>
+			<figcaption>First value of t</figcaption>
+		</figure>
+
+		<figure>
+			<img src="assets/part_1_8.png" alt="Second value of t" style="width:50%"/>
+			<figcaption>Second value of t</figcaption>
+		</figure>
+
+		<figure>
+			<img src="assets/part_1_9.png" alt="Third value of t" style="width:50%"/>
+			<figcaption>Third value of t</figcaption>
+		</figure>
+
+		<figure>
+			<img src="assets/part_1_10.png" alt="Fourth value of t" style="width:50%"/>
+			<figcaption>Fourth value of t</figcaption>
+		</figure>
 
 		<h3>Part 2: Bezier surfaces with separable 1D de Casteljau</h3>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		A Bezier surface extends the idea of a Bezier curve from a sequence of control points to an array of control points.
+		Two parameters, <em>u</em> and <em>v</em>, determine a point on the surface, analogous to how <em>t</em> determines a point on the curve in Part 1.
+		For one pair of parameter values, I first run the Part 1 process at <em>u</em> on every row of control points.
+		Each row reduces to one point, leaving a new column of intermediate points.
+		I then run the same process at <em>v</em> on that column to obtain the final point on the surface.
+		<em>u</em>, <em>v</em> pairs are sampled across the patch, just as <em>t</em> values are sampled in Part 1, to create the full surface.
+
+		<figure>
+			<img src="assets/part_2.png" alt="Bezier teapot" style="width:50%"/>
+			<figcaption>Bezier teapot</figcaption>
+		</figure>
 
 		<h2>Section II: Triangle Meshes and Half-Edge Data Structure</h2>
 
 		<h3>Part 3: Area-weighted vertex normals</h3>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		Area-weighted vertex normals provide smooth shading at each vertex, giving larger faces more weight.
+		For each vertex, I check its neighboring faces.
+		For non-boundary triangles, I take the cross product of the two edges starting at the vertex and add it to a running sum.
+    The order of the two edge vectors follows a consistent winding, so the cross products point in the same outward direction.
+		The magnitude of the cross product is double the triangle's area, so summing then normalizing these cross products yields the area weighting.
+
+		<figure>
+			<img src="assets/part_3_1.png" alt="Teapot shading without vertex normals" style="width:50%"/>
+			<figcaption>Teapot shading without vertex normals</figcaption>
+		</figure>
+
+		<figure>
+			<img src="assets/part_3_2.png" alt="Teapot shading with vertex normals " style="width:50%"/>
+			<figcaption>Teapot shading with vertex normals </figcaption>
+		</figure>
 
 		<h3>Part 4: Edge flip</h3>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		To flip an edge, I replace the diagonal shared by two triangles with the diagonal that connects their opposite vertices.
+		To do this, I first collect the shared and surrounding half-edges.
+		I keep the same edge object instance, but change it so it represents the new diagonal between the opposite vertices.
+		I then update the affected vertices, half-edges, edges, and faces so each refers to the correct element in the new configuration.
+		No elements are created or removed.
+		To make implementation easier, I named every element by its role in the two triangles, then explicitly reassigned every reference, including references whose values did not change, so none would be missed.
+
+		<figure>
+			<img src="assets/part_4_1.png" alt="Teapot before edge flips" style="width:50%"/>
+			<figcaption>Teapot before edge flips</figcaption>
+		</figure>
+
+		<figure>
+			<img src="assets/part_4_2.png" alt="Teapot after edge flips" style="width:50%"/>
+			<figcaption>Teapot after edge flips</figcaption>
+		</figure>
 
 		<h3>Part 5: Edge split</h3>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		To split an edge, I insert a vertex at the midpoint of the edge.
+		To do this, I first collect the shared and surrounding half-edges.
+		I reuse the original edge and faces, then create one vertex, six half-edges, three edges, and two faces to turn the two triangles into four.
+		I then update the affected vertices, half-edges, edges, and faces so each refers to the correct element in the new configuration.
+		To make implementation easier, I named every element by its role in the four triangles, then explicitly reassigned every reference, including references whose values did not change, so none would be missed.
+    Like Part 4, this is mostly a sequence of assignments that updates the mesh connections, but splitting is different in that it also requires creating new elements.
+
+		<figure>
+			<img src="assets/part_5_1.png" alt="Cow mesh before edge splits and flips" style="width:50%"/>
+			<figcaption>Cow mesh before edge splits and flips</figcaption>
+		</figure>
+
+		<figure>
+			<img src="assets/part_5_2.png" alt="Cow mesh after edge splits (near the eye area)" style="width:50%"/>
+			<figcaption>Cow mesh after edge splits (near the eye area)</figcaption>
+		</figure>
+
+		<figure>
+			<img src="assets/part_5_3.png" alt="Cow mesh after edge splits and flips (near the eye area)" style="width:50%"/>
+			<figcaption>Cow mesh after edge splits and flips (near the eye area)</figcaption>
+		</figure>
 
 		<h3>Part 6: Loop subdivision for mesh upsampling</h3>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		Loop subdivision refines triangles of a mesh into smaller triangles, repositioning vertices based on their surrounding geometry to produce a smoother surface.
+		I first calculate every new position from the untouched mesh, before splitting or flipping any edges.
+		This ensures that each calculation uses the original neighbors instead of neighbors introduced by any operations.
+		An old vertex of degree <em>n</em> receives (1 − <em>n u</em>) times its old position plus <em>u</em> times the sum of its neighbors, where <em>u</em> = 3/16 for degree 3 and 3/(8<em>n</em>) otherwise.
+		For an old edge with endpoints <em>A</em>, <em>B</em> and opposite vertices <em>C</em>, <em>D</em>, the new vertex created on that edge is placed at 3/8(<em>A</em> + <em>B</em>) + 1/8(<em>C</em> + <em>D</em>).
+		I store these positions until all of the mesh edits are complete.
+		Next, I record which edges were present at the start, then split each of those original edges exactly once.
+		Splitting all three edges of an original triangle creates its four smaller triangles.
+		I flip new edges that connect one old vertex and one new vertex, replacing those diagonals with diagonals between new vertices so the four smaller triangles have the intended arrangement.
+		Finally, I apply the stored positions to the vertices.
+		Subdivision rounds sharp corners and edges because the position rules effectively average neighboring vertices.
 
-		<h2>(Optional) Section III: Potential Extra Credit - Art Competition: Model something Creative</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+    <br><br>
+    
+		For the torus below, despite the original mesh being pointy, the processed mesh is very smooth and round. 
+    The straight sides and sharp corners become increasingly rounded by every iteration of Loop subdivision.
+		Interestingly, adding splits near a corner before subdivision creates more vertices there, so the new surface keeps a more noticeable corner instead of smoothing it away as much.
+		This is due to how Loop subdivision works.
+    Because Loop subdivision computes new positions from neighboring vertices, the extra nearby vertices keep the averages close to that corner instead of blending it with points farther away.
 
-		<h2>Additional Notes (please remove)</h2>
-		<ul>
-			<li>You can also add code if you'd like as so: <code>code code code</code></li>
-			<li>If you'd like to add math equations, 
-				<ul>
-					<li>You can write inline equations like so: \( a^2 + b^2 = c^2 \)</li>
-					<li>You can write display equations like so: \[ a^2 + b^2 = c^2 \]</li>
-				</ul>
-			</li>
-		</ul>
+		<figure>
+			<img src="assets/task_6_1.png" alt="Torus" style="width:50%"/>
+			<figcaption>Torus</figcaption>
+		</figure>
+
+		<figure>
+			<img src="assets/task_6_2.png" alt="Torus after subdivision" style="width:50%"/>
+			<figcaption>Torus after subdivision (4 iterations)</figcaption>
+		</figure>
+
+		<figure>
+			<img src="assets/task_6_3.png" alt="Preprocessed torus" style="width:50%"/>
+			<figcaption>Preprocessed torus</figcaption>
+		</figure>
+
+		<figure>
+			<img src="assets/task_6_4.png" alt="Preprocessed torus after subdivision" style="width:50%"/>
+			<figcaption>Preprocessed torus after subdivision (4 iterations)</figcaption>
+		</figure>
+
+		The original triangulation of the cube below is uneven. 
+    A single diagonal on a face of the cube gives the two vertices touching the diagonal a greater degree than the other two. 
+  	Since Loop subdivision weights depend on the neighbors of vertices, they are treated differently, and repeated subdivision makes the cube gradually asymmetric.
+		I preprocessed the cube with splits and flips to make the faces symmetric, such that each face has two intersecting diagonals.
+		Subdividing this produces a symmetric result.
+
+		<figure>
+			<img src="assets/task_6_5.png" alt="Cube" style="width:50%"/>
+			<figcaption>Cube</figcaption>
+		</figure>
+
+		<figure>
+			<img src="assets/task_6_6.png" alt="Cube after subdivision" style="width:50%"/>
+			<figcaption>Cube after subdivision (3 iterations)</figcaption>
+		</figure>
+
+		<figure>
+			<img src="assets/task_6_7.png" alt="Preprocessed cube" style="width:50%"/>
+			<figcaption>Preprocessed cube</figcaption>
+		</figure>
+
+		<figure>
+			<img src="assets/task_6_8.png" alt="Preprocessed cube after subdivision" style="width:50%"/>
+			<figcaption>Preprocessed cube after subdivision (3 iterations)</figcaption>
+		</figure>
 		</div>
 	</body>
 </html>
