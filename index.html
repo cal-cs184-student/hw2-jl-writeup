@@ -48,9 +48,9 @@
 
 		<h2>Overview</h2>
 		In this project, I implemented Bezier curve and patch evaluation, area-weighted vertex normals, edge flips and splits, and Loop subdivision.
-		The first two parts build smooth geometry by repeatedly interpolating control points.
-		The mesh parts work directly with triangle connectivity.
-		The most useful lesson was that a local mesh edit is only correct when every affected half-edge, vertex, edge, and face still points to the right neighbor; a visually plausible result alone does not guarantee that later edits will work.
+		I learned how repeatedly interpolating control points creates smooth curves and surfaces.
+		The mesh parts taught me that even a small change, such as flipping or splitting one edge, requires updating every affected element.
+		I learned to check those connections carefully because a missed reference can look fine at first but cause problems in later edits or subdivision.
 
 		<h2>Section I: Bezier Curves and Surfaces</h2>
 
